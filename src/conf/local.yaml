@@ -1,0 +1,16 @@
+project:
+  home: /home/cclab
+  user : cclab
+
+cluster:
+  master: 127.0.0.1
+  worker1: 172.16.0.111
+  worker2: 172.16.0.112
+
+cilium-hubble:
+  url: localhost
+  port: 4245
+
+kubearmor:
+  url: localhost
+  port: 32767
