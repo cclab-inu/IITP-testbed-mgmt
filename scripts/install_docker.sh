@@ -19,9 +19,10 @@ sudo apt-get update
 sudo apt-cache policy docker-ce
 
 # install docker
-sudo apt-get install docker-ce -y
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 
 # start docker
+sudo systemctl enable docker
 sudo systemctl restart docker
 
 # docker permission error solution
@@ -33,4 +34,3 @@ sudo usermod -a -G docker $USER
 newgrp docker
 
 # edit done
-# requirements : add each versions case (e.g. 20.04)
