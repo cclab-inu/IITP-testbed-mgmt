@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# net-tools install
+sudo apt install net-tools
+
 # temporarily using build files directory
 mkdir -p /tmp/tools
 cd /tmp/tools
