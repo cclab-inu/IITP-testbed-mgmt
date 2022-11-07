@@ -3,7 +3,7 @@
 
 * Requirements
 
-  You can install Docker and Kubernetes on any Ubuntu platform (e.g., 18.04, 20.04).
+  You can install Docker and Kubernetes on any Ubuntu platform (Recommend : 20.04 (Focal Fossa)).
 
 * Prerequisites
 
