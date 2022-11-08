@@ -36,3 +36,5 @@ echo "export PATH=\$PATH:/usr/local/go/bin:\$HOME/go/bin" >> ~/.profile
 sudo apt-get install -y apparmor apparmor-utils
 
 sudo rm -rf /tmp/tools
+
+# done
