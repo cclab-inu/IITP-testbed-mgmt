@@ -14,12 +14,11 @@ systemctl stop containerd.service
 dpkg -l | grep -i docker
 
 # Docker uninstall
-sudo apt-get purge -y docker-engine docker docker.io docker-ce docker-ce-cli
+sudo apt-get purge -y docker-engine docker docker.io docker-ce docker-ce-cli containerd.io docker-compose-plugin
 sudo apt-get autoremove -y --purge docker-engine docker docker.io docker-ce
 
 # Remove the files that related docker
-sudo rm -rf /var/lib/docker /etc/docker
-sudo rm /etc/apparmor.d/docker
+sudo rm -rf /var/lib/docker /var/lib/containerd /etc/docker /etc/apparmor.d/docker
 sudo groupdel docker
 sudo rm -rf /var/run/docker.sock
 
