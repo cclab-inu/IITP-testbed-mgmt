@@ -30,7 +30,7 @@ apt-get update
 
 # installatino kubelet, kubeadm, kubectl
 apt-get -y install kubelet kubeadm kubectl
-apt-mark hold kubelet kubeadm kubectl (패키지 변경 방지)
+apt-mark hold kubelet kubeadm kubectl
 systemctl daemon-reload
 systemctl restart kubelet
 systemctl status kubelet
