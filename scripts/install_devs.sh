@@ -30,11 +30,14 @@ sudo tar -C /usr/local -xzf /tmp/tools/go1.18.8.linux-amd64.tar.gz
 echo "export GOPATH=\$HOME/go" >> ~/.profile
 echo "export GOROOT=/usr/local/go" >> ~/.profile
 echo "export PATH=\$PATH:/usr/local/go/bin:\$HOME/go/bin" >> ~/.profile
-echo `. ~/.profile`
 
 # Installation Apparmor
 sudo apt-get install -y apparmor apparmor-utils
 
 sudo rm -rf /tmp/tools
+
+# restart the system
+echo "System will be reboot soon . . ."
+sudo reboot
 
 # done
