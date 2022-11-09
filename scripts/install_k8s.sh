@@ -5,9 +5,6 @@
 # apt-repository update
 sudo apt-get update
 
-# Check the Docker Status
-systemctl status docker
-
 # Swap-off & Disable Firewall
 sudo swapoff -a && sudo sed -i '/swap/s/^/#/' /etc/fstab
 ufw disable
@@ -15,7 +12,7 @@ sudo systemctl stop firewalld
 sudo systemctl disable firewalld
 
 # Setting Network Time Protocol
-sudo apt install ntp
+sudo apt install ntp -y
 sudo service ntp restart
 sudo ntpq -p
 
@@ -52,12 +49,12 @@ curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add
 cat <<EOF | sudo tee /etc/apt/sources.list.d/kubernetes.list
 deb https://apt.kubernetes.io/ kubernetes-xenial main
 EOF
-apt-get update
+sudo apt-get update
 
-apt-get -y install kubelet kubeadm kubectl
-apt-mark hold kubelet kubeadm kubectl
-systemctl daemon-reload
-systemctl restart kubelet
-systemctl status kubelet
+sudo apt-get -y install kubelet kubeadm kubectl
+sudo apt-mark hold kubelet kubeadm kubectl
+sudo systemctl daemon-reload
+sudo systemctl restart kubelet
+sudo systemctl status kubelet
 
 # kubernetes cheat sheet : https://kubernetes.io/ko/docs/reference/kubectl/cheatsheet/
