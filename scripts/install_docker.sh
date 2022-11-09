@@ -15,7 +15,7 @@ sudo apt-get update
 sudo apt-cache policy docker-ce
 
 # install docker
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
 # start docker
 sudo systemctl enable docker
@@ -29,4 +29,4 @@ sudo groupadd docker
 sudo usermod -a -G docker $USER
 newgrp docker
 
-# edit done
+# done

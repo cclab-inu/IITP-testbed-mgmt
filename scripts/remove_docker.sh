@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Docker image stop & remove
-docker stop $(docker ps -q)
+docker stop $(docker ps -a -q)
 docker rm -f $(docker ps -a -q)
 docker rmi -f $(docker images -a -q)
 docker network prune -f
@@ -15,7 +15,7 @@ dpkg -l | grep -i docker
 
 # Docker uninstall
 sudo apt-get purge -y docker-engine docker docker.io docker-ce docker-ce-cli containerd.io docker-compose-plugin
-sudo apt-get autoremove -y --purge docker-engine docker docker.io docker-ce
+sudo apt-get autoremove -y --purge docker-engine docker docker.io docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
 # Remove the files that related docker
 sudo rm -rf /var/lib/docker /var/lib/containerd /etc/docker /etc/apparmor.d/docker
@@ -25,3 +25,5 @@ sudo rm -rf /var/run/docker.sock
 # All the Docker misc files remove
 # Caution about general files that named 'docker'
 # sudo find / -name "*docker*" -exec `rm -rf` {} +
+
+# done
