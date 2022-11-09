@@ -38,6 +38,7 @@ sudo rm -rf /tmp/tools
 
 # restart the system
 echo "System will be reboot soon . . ."
+sleep 3
 sudo reboot
 
 # done
