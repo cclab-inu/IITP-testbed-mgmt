@@ -23,7 +23,7 @@ cd /tmp/tools
 # sudo tar -C /usr/local -xzf /tmp/tools/$goBinary
 
 # Installation Go Binaries (Fixed Verision : 1.18.8)
-wget --quiet https://go.dev/dl/go1.18.8.linux-amd64.tar.gz -O /tmp/tools/go1.18.8.linux-amd64.tar.gz
+wget https://go.dev/dl/go1.18.8.linux-amd64.tar.gz -O /tmp/tools/go1.18.8.linux-amd64.tar.gz
 sudo tar -C /usr/local -xzf /tmp/tools/go1.18.8.linux-amd64.tar.gz
 
 # Environment var settings
