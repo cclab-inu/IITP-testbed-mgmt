@@ -8,6 +8,7 @@ import (
 	"os"
 
 	cluster "github.com/cclab.inu/testbed-mgmt/src/cluster"
+	pods "github.com/cclab.inu/testbed-mgmt/src/pod"
 )
 
 // CLI responsible for processing command line arguments
@@ -42,7 +43,15 @@ func (cli *CLI) createCluster() {
 }
 
 func (cli *CLI) deleteCluster() {
+	cluster.DeleteCluster()
+}
 
+func (cli *CLI) deployPod() {
+	pods.DeployPods()
+}
+
+func (cli *CLI) deletePod() {
+	pods.DeletePods()
 }
 
 // Run parses command line arguments and processes commands
@@ -52,6 +61,9 @@ func (cli *CLI) Run() {
 	createCluster := flag.NewFlagSet("create-cluster", flag.ExitOnError)
 	deleteCluster := flag.NewFlagSet("delete-cluster", flag.ExitOnError)
 
+	deployPod := flag.NewFlagSet("deploy-pods", flag.ExitOnError)
+	deletePod := flag.NewFlagSet("deploy-pods", flag.ExitOnError)
+
 	switch os.Args[1] {
 	case "create-cluster":
 		err := createCluster.Parse(os.Args[2:])
@@ -60,6 +72,16 @@ func (cli *CLI) Run() {
 		}
 	case "delete-cluster":
 		err := deleteCluster.Parse(os.Args[2:])
+		if err != nil {
+			log.Panic(err)
+		}
+	case "deploy-pods":
+		err := deployPod.Parse(os.Args[2:])
+		if err != nil {
+			log.Panic(err)
+		}
+	case "delete-pods":
+		err := deletePod.Parse(os.Args[2:])
 		if err != nil {
 			log.Panic(err)
 		}
@@ -74,5 +96,13 @@ func (cli *CLI) Run() {
 
 	if createCluster.Parsed() {
 		cli.createCluster()
+	}
+
+	if deployPod.Parsed() {
+		cli.deployPod()
+	}
+
+	if deletePod.Parsed() {
+		cli.deletePod()
 	}
 }
