@@ -67,9 +67,20 @@ type TemSpec struct {
 
 // Containers
 type Containers struct {
-	Name  string  `yaml:"name"`
-	Image string  `yaml:"image"`
-	Ports []Ports `yaml:"ports"`
+	Name      string    `yaml:"name"`
+	Image     string    `yaml:"image"`
+	Resources Resources `yaml:"resources"`
+	Ports     []Ports   `yaml:"ports"`
+}
+
+type Resources struct {
+	Requests Resource `yaml:"requests"`
+	Limits   Resource `yaml:"limits"`
+}
+
+type Resource struct {
+	Cpu    string `yaml:"cpu"`
+	Memory string `yaml:"memory"`
 }
 
 // Ports
@@ -87,7 +98,7 @@ func DeployPods() {
 	wg.Add(2)
 
 	var imgVER string
-	fmt.Print("Image Version : ") // e.g. nginx 1.22
+	fmt.Print("Image Version: ") // e.g. nginx 1.22
 
 	Reader := bufio.NewReader(os.Stdin)
 	imgVER, err := Reader.ReadString('\n')
@@ -130,6 +141,16 @@ func DeployPods() {
 						Containers{
 							Name:  slice[0],
 							Image: slice[0] + ":" + slice[1],
+							Resources: Resources{
+								Requests: Resource{
+									Cpu:    "2000m",
+									Memory: "2Gi",
+								},
+								Limits: Resource{
+									Cpu:    "4000m",
+									Memory: "4Gi",
+								},
+							},
 							Ports: []Ports{
 								Ports{
 									ContainerPort: 80,
@@ -160,7 +181,7 @@ func DeletePods() {
 	var wg sync.WaitGroup
 	wg.Add(1)
 
-	fmt.Print("Type (all/choice) : ") // Enter either
+	fmt.Print("Type(all/choice): ") // Enter either
 
 	dtReader := bufio.NewReader(os.Stdin)
 	types, err := dtReader.ReadString('\n')
@@ -193,7 +214,7 @@ func DeletePods() {
 		} else {
 			var imgVER string
 			println()
-			fmt.Print("Image Version : ") // Input according to output (e.g. wordpress 6.1)
+			fmt.Print("Image Version: ") // Input according to output (e.g. wordpress 6.1)
 			dtReader := bufio.NewReader(os.Stdin)
 			imgVER, err := dtReader.ReadString('\n')
 			if err != nil {
@@ -215,4 +236,8 @@ func DeletePods() {
 		DeletePods()
 	}
 	wg.Wait()
+}
+
+func main() {
+
 }
