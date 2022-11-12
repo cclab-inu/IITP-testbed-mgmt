@@ -51,6 +51,16 @@ Usage:
 ### 2. Test
 Currently, "**create-cluster**", "**delete-cluster**", "**deploy-pods**", and "**delete-pods**" are implemented.
 
+**Test Image List**
+```text
+wordpress:6.1.0
+nginx:1.23
+nginx:1.22
+httpd:2.4
+httpd:2
+---
+```
+
 * create-cluster
   ```text
   $ ~/IITP-testbed-mgmt/src$ ./main create-cluster
