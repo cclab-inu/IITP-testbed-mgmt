@@ -1,5 +1,4 @@
-# The Development of Darkweb Hidden Service Identification and Real IP Trace Technology Testbed Environment Based-on Kubernetes
-
+# Testbed Management System for Kubernetes
 
 * Requirements
 
@@ -9,33 +8,28 @@
 
   - 3 Virtual machines
 
-  - You need to disable the swap partition in advance for Kubernetes setup.
-
+  - Disable the swap partition in advance for Kubernetes setup.
   ```text
   $ sudo vi /etc/fstab
   (comment out the line for swap)
   $ sudo reboot
   ```
-
-## Testing Guide
-### 0. To install the testbed from basic to your Ubuntu run
-``` text
+  - Install dependencies
+  ```text
   $ cd IITP-testbed-mgmt/scripts
   ~/IITP-testbed-mgmt/scripts$ ./install_devs.sh
   ~/IITP-testbed-mgmt/scripts$ ./install_docker.sh
   ~/IITP-testbed-mgmt/scripts$ ./install_k8s.sh
-```
-* The VM reboots when ./install_devs.sh runs.
-* Please reconnect after some time ...
+  ```
+  
 
-### 1. Compiling for execution
+## Test Guide
+
+### 1. Compile and run the executable file
 ``` text
 $ cd IITP-testbed-mgmt/src
-~/IITP-testbed-mgmt/src$ go build main.go
-~/IITP-testbed-mgmt/src$ ./main [Usage]
-```
-The output is as below, and you can enter the  "Usage".
-``` text
+~/IITP-testbed-mgmt/src$ go build -o testbed
+~/IITP-testbed-mgmt/src$ ./testbed
 Usage:
   create-cluster
   delete-cluster
@@ -48,37 +42,37 @@ Usage:
   print-logs
 ```
 
-### 2. Test
-Currently, "**create-cluster**", "**delete-cluster**", "**deploy-pods**", and "**delete-pods**" are implemented.
+### 2. Check the supported container images
 
-**Test Image List**
 ```text
 wordpress:6.1.0
 nginx:1.23
 nginx:1.22
 httpd:2.4
 httpd:2
----
 ```
+
+### 3. Test the functions
+"**create-cluster**", "**delete-cluster**", "**deploy-pods**", and "**delete-pods**" are available now
 
 * create-cluster
   ```text
-  $ ~/IITP-testbed-mgmt/src$ ./main create-cluster
+  $ ~/IITP-testbed-mgmt/src$ ./testbed create-cluster
   ```
 
 * delete-cluster
   ```text
-  $ ~/IITP-testbed-mgmt/src$ ./main delete-cluster
+  $ ~/IITP-testbed-mgmt/src$ ./testbed delete-cluster
   ```
 
 * deploy-pods
   ```text
-  $ ~/IITP-testbed-mgmt/src$ ./main deploy-pods
+  $ ~/IITP-testbed-mgmt/src$ ./testbed deploy-pods
     Image Version: [Image name] [Version]
   ```
   An example of deploying 'nginx:1.22' pods
   ```text
-  $ ~/IITP-testbed-mgmt/src$ ./main deploy-pods
+  $ ~/IITP-testbed-mgmt/src$ ./testbed deploy-pods
   Image Version: nginx 1.22
   1.22: Pulling from library/nginx
   e9995326b091: Pull complete 
@@ -93,12 +87,12 @@ httpd:2
 
 * delete-pods
   ```text
-  $ ~/IITP-testbed-mgmt/src$ ./main delete-pods
+  $ ~/IITP-testbed-mgmt/src$ ./testbed delete-pods
   Type(all/choice): [Type]
   ```
   #### Type 'all'
   ```text
-  $ ~/IITP-testbed-mgmt/src$ ./main delete-pods
+  $ ~/IITP-testbed-mgmt/src$ ./testbed delete-pods
   Type (all/choice) : all
   deployment.apps "nginx-1.22-deploy" deleted
   deployment.apps "nginx-1.23-deploy" deleted
@@ -107,7 +101,7 @@ httpd:2
   ```
     An example of Type 'all'
     ```text
-    $ ~/IITP-testbed-mgmt/src$ ./main delete-pods
+    $ ~/IITP-testbed-mgmt/src$ ./testbed delete-pods
     Type (all/choice) : all
     deployment.apps "[image name]-[version]-deploy" deleted
     ----
@@ -115,7 +109,7 @@ httpd:2
 
   #### Type 'choice'
   ```text
-  $ ~/IITP-testbed-mgmt/src$ ./main delete-pods
+  $ ~/IITP-testbed-mgmt/src$ ./testbed delete-pods
   Type(all/choice): choice
   [image]-[version]-deploy
   [image]-[version]-deploy
@@ -126,7 +120,7 @@ httpd:2
   ```
   An example of Type 'choice'
   ```text
-  $ ~/IITP-testbed-mgmt/src$ ./main delete-pods
+  $ ~/IITP-testbed-mgmt/src$ ./testbed delete-pods
   Type (all/choice) : choice
   nginx-1.22-deploy
   nginx-1.23-deploy
