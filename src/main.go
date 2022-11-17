@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	CLI "github.com/cclab.inu/testbed-mgmt/src/cli"
+	"github.com/cclab.inu/testbed-mgmt/src/cli"
 )
 
 func init() {
@@ -12,6 +12,6 @@ func init() {
 }
 
 func main() {
-	cli := CLI.CLI{}
+	cli := cli.CLI{}
 	cli.Run()
 }

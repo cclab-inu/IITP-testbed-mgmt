@@ -1,6 +1,7 @@
 package cluater
 
 import (
+	"context"
 	"flag"
 	"io/ioutil"
 	"os"
@@ -10,11 +11,13 @@ import (
 	"sync"
 
 	"github.com/rs/zerolog/log"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
 	bar "github.com/cclab.inu/testbed-mgmt/src/bar"
+	"github.com/cclab.inu/testbed-mgmt/src/types"
 )
 
 var parsed bool = false
@@ -122,6 +125,66 @@ func ConnectInClusterAPIClient() *kubernetes.Clientset {
 // =============== //
 // == Namespace == //
 // =============== //
+
+func GetNamespacesFromK8sClient() []string {
+	results := []string{}
+
+	client := ConnectK8sClient()
+	if client == nil {
+		return results
+	}
+
+	// get namespaces from k8s api client
+	namespaces, err := client.CoreV1().Namespaces().List(context.Background(), metav1.ListOptions{})
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return results
+	}
+
+	for _, namespace := range namespaces.Items {
+		if namespace.Status.Phase != "Active" {
+			continue
+		}
+
+		results = append(results, namespace.Name)
+	}
+
+	return results
+}
+
+// ========= //
+// == Pod == //
+// ========= //
+
+func GetPodsFromK8sClient() []types.Pod {
+	results := []types.Pod{}
+
+	client := ConnectK8sClient()
+	if client == nil {
+		return nil
+	}
+
+	// get pods from k8s api client
+	pods, err := client.CoreV1().Pods("").List(context.Background(), metav1.ListOptions{})
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return results
+	}
+
+	for _, pod := range pods.Items {
+		results = append(results, types.Pod{
+			Namespace: pod.Namespace,
+			PodName:   pod.Name,
+			PodIP:     pod.Status.PodIP,
+		})
+	}
+
+	return results
+}
+
+// ============= //
+// == Cluster == //
+// ============= //
 
 func CreateCluster() {
 	var wg sync.WaitGroup
