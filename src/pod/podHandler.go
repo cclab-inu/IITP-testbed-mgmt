@@ -1,178 +1,81 @@
 package pod
 
 import (
-	"bufio"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"sync"
-
-	"gopkg.in/yaml.v3"
 )
-
-// ============================
-// == Deployment Yaml Struct ==
-// ============================
-
-// Yaml2Go
-type Yaml2Go struct {
-	ApiVersion string   `yaml:"apiVersion"`
-	Kind       string   `yaml:"kind"`
-	Metadata   Metadata `yaml:"metadata"`
-	Spec       Spec     `yaml:"spec"`
-}
-
-// Metadata
-type Metadata struct {
-	Name   string `yaml:"name"`
-	Labels Labels `yaml:"labels"`
-}
-
-// Spec
-type Spec struct {
-	Replicas int      `yaml:"replicas"`
-	Selector Selector `yaml:"selector"`
-	Template Template `yaml:"template"`
-}
-
-// Selector
-type Selector struct { //spec:Selector
-	MatchLabels Labels `yaml:"matchLabels"`
-}
-
-// Labels
-type Labels struct {
-	App string `yaml:"app"`
-}
-
-// spec:Template
-type Template struct {
-	Metadata TemMetadata `yaml:"metadata"`
-	Spec     TemSpec     `yaml:"spec"`
-}
-
-// Template Metadata
-type TemMetadata struct {
-	Name   string `yaml:"name"`
-	Labels Labels `yaml:"labels"`
-}
-
-// Template Spec
-type TemSpec struct {
-	Containers []Containers `yaml:"containers"`
-}
-
-// Containers
-type Containers struct {
-	Name      string    `yaml:"name"`
-	Image     string    `yaml:"image"`
-	Resources Resources `yaml:"resources"`
-	Ports     []Ports   `yaml:"ports"`
-}
-
-type Resources struct {
-	Requests Resource `yaml:"requests"`
-	Limits   Resource `yaml:"limits"`
-}
-
-type Resource struct {
-	Cpu    string `yaml:"cpu"`
-	Memory string `yaml:"memory"`
-}
-
-// Ports
-type Ports struct {
-	ContainerPort int `yaml:"containerPort"`
-}
-
-// ================
-// == podHandler ==
-// ================
 
 // deploy-pods
 func DeployPods() {
 	var wg sync.WaitGroup
-	wg.Add(2)
+	wg.Add(1)
 
-	var imgVER string
-	fmt.Print("Image Version: ") // e.g. nginx 1.22
-
-	Reader := bufio.NewReader(os.Stdin)
-	imgVER, err := Reader.ReadString('\n')
+	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
 	if err != nil {
-		log.Fatal(err)
-	}
-	imgVER = strings.TrimSpace(imgVER)
-
-	slice := strings.Split(imgVER, " ")
-	imgVER = "docker pull " + slice[0] + ":" + slice[1]
-
-	cmd := exec.Command("sh", "-c", imgVER)
-	cmd.Stdout = os.Stdout
-	if err := cmd.Run(); err != nil {
 		panic(err)
 	}
 
-	pod := Yaml2Go{
-		ApiVersion: "apps/v1",
-		Kind:       "Deployment",
-		Metadata: Metadata{
-			Name: slice[0] + "-" + slice[1] + "-deploy",
-			Labels: Labels{
-				App: "testbed-" + slice[0],
-			}},
-		Spec: Spec{
-			Replicas: 3,
-			Selector: Selector{
-				MatchLabels: Labels{
-					App: "testbed-" + slice[0],
-				}},
-			Template: Template{
-				Metadata: TemMetadata{
-					Name: "testbed-" + slice[0] + "-pod",
-					Labels: Labels{
-						App: "testbed-" + slice[0],
-					}},
-				Spec: TemSpec{
-					Containers: []Containers{
-						Containers{
-							Name:  slice[0],
-							Image: slice[0] + ":" + slice[1],
-							Resources: Resources{
-								Requests: Resource{
-									Cpu:    "2000m",
-									Memory: "2Gi",
-								},
-								Limits: Resource{
-									Cpu:    "4000m",
-									Memory: "4Gi",
-								},
-							},
-							Ports: []Ports{
-								Ports{
-									ContainerPort: 80,
-								}}}}}}}}
+	switch os.Args[2] {
+	// Web Daemon
+	case "nginx", "httpd", "mongo-express":
+		// make image version
+		image := os.Args[2] + ":"
+		podName := os.Args[2] + "-"
+		if len(os.Args) == 3 {
+			image += "latest"
+			podName += "latest"
+		} else {
+			image += os.Args[3]
+			podName += os.Args[3]
+		}
 
-	yamlData, err := yaml.Marshal(&pod)
-	if err != nil {
-		fmt.Println("Error while Marshaling. %v", err)
-	}
+		// image pull
+		pullCmd := "docker pull " + image
+		cmd_img := exec.Command("sh", "-c", pullCmd)
+		cmd_img.Stderr = os.Stderr
+		pullOut, err := cmd_img.Output()
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(string(pullOut))
 
-	fileName := "deployment-" + slice[0] + ".yaml"
-	err = ioutil.WriteFile(fileName, yamlData, 0644)
-	if err != nil {
-		panic("Unable to write data into the file")
-	}
+		// create deployment ; 1 pod
+		runCmd := "kubectl create deployment " + podName + " --image=" + image + " --replicas=1 --port=80"
+		cmd_pod := exec.Command("sh", "-c", runCmd)
+		podOut, err := cmd_pod.Output()
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(string(podOut))
 
-	deploymentPod := "kubectl apply -f " + fileName
-	println()
-	cmd_pod := exec.Command("sh", "-c", deploymentPod)
-	cmd_pod.Stdout = os.Stdout
-	if err := cmd_pod.Run(); err != nil {
-		panic(err)
+		// image save
+		saveCmd := "docker save -o " + dir + "/template/" + podName + ".tar " + image
+		cmd_save := exec.Command("sh", "-c", saveCmd)
+		_, err = cmd_save.Output()
+		if err != nil {
+			panic(err)
+		}
+		print("Image saving is complete. \n")
+
+	// CMS
+	case "joomla", "drupal", "wordpress":
+		CMScmd := "helm install " + os.Args[2] + " bitnami/" + os.Args[2] + " --set service.port=8080"
+		cmd_cms := exec.Command("sh", "-c", CMScmd)
+		CMSout, err := cmd_cms.Output()
+		if err != nil {
+			log.Fatal(err)
+		}
+		output := string(CMSout)
+		fmt.Println(output[:strings.Index(output, "**")])
+		print("** " + os.Args[2] + " created ** \n")
+
+	default:
+		print("Check you Command\n")
 	}
 }
 
@@ -181,63 +84,77 @@ func DeletePods() {
 	var wg sync.WaitGroup
 	wg.Add(1)
 
-	fmt.Print("Type(all/choice): ") // Enter either
-
-	dtReader := bufio.NewReader(os.Stdin)
-	types, err := dtReader.ReadString('\n')
-	if err != nil {
-		log.Fatal(err)
-	}
-	types = strings.TrimSpace(types)
-
-	switch types {
+	switch os.Args[2] {
 	case "all":
-		cmd_all := exec.Command("sh", "-c", "kubectl delete deployment --all")
-		cmd_all.Stdout = os.Stdout
-		if err := cmd_all.Run(); err != nil {
+		cmd_deploy := exec.Command("sh", "-c", "kubectl delete deployment --all")
+		cmd_deploy.Stdout = os.Stdout
+		if err := cmd_deploy.Run(); err != nil {
+			panic(err)
+		}
+		cmd_cms := exec.Command("sh", "-c", "helm uninstall $(helm ls --short)")
+		cmd_cms.Stdout = os.Stdout
+		if err := cmd_cms.Run(); err != nil {
 			panic(err)
 		}
 		wg.Done()
-	case "choice":
-		cmd_get, _ := exec.Command("sh", "-c", "kubectl get deployment -o name").Output()
-
-		var deployName string
-		deployCheck := strings.Split(string(cmd_get), "deployment.apps/")
-		for _, str := range deployCheck {
-			deployName = strings.Trim(str, " ")
-			fmt.Print(deployName)
-		}
-		if len(deployName) <= 0 {
-			println("check")
-			wg.Done()
-			break
+	// Web Daemon
+	case "nginx", "httpd", "mongo":
+		podName := os.Args[2] + "-"
+		if len(os.Args) == 3 {
+			podName += "latest"
 		} else {
-			var imgVER string
-			println()
-			fmt.Print("Image Version: ") // Input according to output (e.g. wordpress 6.1)
-			dtReader := bufio.NewReader(os.Stdin)
-			imgVER, err := dtReader.ReadString('\n')
-			if err != nil {
-				log.Fatal(err)
-			}
-			imgVER = strings.TrimSpace(imgVER)
-			slice := strings.Split(imgVER, " ")
-			imgVER = "kubectl delete deployment " + slice[0] + "-" + slice[1] + "-deploy"
-
-			cmd_delete := exec.Command("sh", "-c", imgVER)
-			cmd_delete.Stdout = os.Stdout
-			if err := cmd_delete.Run(); err != nil {
-				panic(err)
-			}
-			wg.Done()
+			podName += os.Args[3]
 		}
+		del_deploy := "kubectl delete deployment " + podName
+		cmd_delete := exec.Command("sh", "-c", del_deploy)
+		cmd_delete.Stdout = os.Stdout
+		if err := cmd_delete.Run(); err != nil {
+			panic(err)
+		}
+		wg.Done()
+	// CMS
+	case "joomla", "drupal", "wordpress":
+		del_release := "helm uninstall " + os.Args[2]
+		cmd_delete := exec.Command("sh", "-c", del_release)
+		cmd_delete.Stdout = os.Stdout
+		if err := cmd_delete.Run(); err != nil {
+			panic(err)
+		}
+		wg.Done()
 	default:
 		fmt.Println("Check your Command")
-		DeletePods()
 	}
-	wg.Wait()
 }
 
-func main() {
+// restart-pods
+func RestartPods() {
+	var wg sync.WaitGroup
+	wg.Add(1)
 
+	switch os.Args[2] {
+	case "nginx", "httpd", "mongo-express":
+		podName := os.Args[2] + "-"
+		if len(os.Args) == 3 {
+			podName += "latest"
+		} else {
+			podName += os.Args[3]
+		}
+		re_deploy := "kubectl rollout restart deployment " + podName
+		cmd_re := exec.Command("sh", "-c", re_deploy)
+		cmd_re.Stdout = os.Stdout
+		if err := cmd_re.Run(); err != nil {
+			panic(err)
+		}
+		wg.Done()
+	case "joomla", "drupal", "wordpress":
+		re_deploy := "kubectl rollout restart deployment " + os.Args[2]
+		cmd_re := exec.Command("sh", "-c", re_deploy)
+		cmd_re.Stdout = os.Stdout
+		if err := cmd_re.Run(); err != nil {
+			panic(err)
+		}
+		wg.Done()
+	default:
+		fmt.Println("Check your Command")
+	}
 }

@@ -1,4 +1,4 @@
-package cluater
+package cluster
 
 import (
 	"bufio"

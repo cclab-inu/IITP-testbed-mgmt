@@ -1,1 +1,1 @@
-package cluater
+package cluster

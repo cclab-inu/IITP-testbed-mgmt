@@ -8,6 +8,7 @@ import (
 	"os"
 
 	cluster "github.com/cclab.inu/testbed-mgmt/src/cluster"
+	"github.com/cclab.inu/testbed-mgmt/src/pod"
 	pods "github.com/cclab.inu/testbed-mgmt/src/pod"
 )
 
@@ -54,6 +55,10 @@ func (cli *CLI) deletePod() {
 	pods.DeletePods()
 }
 
+func (cli *CLI) restartPod() {
+	pod.RestartPods()
+}
+
 // Run parses command line arguments and processes commands
 func (cli *CLI) Run() {
 	cli.validateArgs()
@@ -63,6 +68,7 @@ func (cli *CLI) Run() {
 
 	deployPod := flag.NewFlagSet("deploy-pods", flag.ExitOnError)
 	deletePod := flag.NewFlagSet("deploy-pods", flag.ExitOnError)
+	restartPod := flag.NewFlagSet("restart-pods", flag.ExitOnError)
 
 	switch os.Args[1] {
 	case "create-cluster":
@@ -85,6 +91,11 @@ func (cli *CLI) Run() {
 		if err != nil {
 			log.Panic(err)
 		}
+	case "restart-pods":
+		err := restartPod.Parse(os.Args[2:])
+		if err != nil {
+			log.Panic(err)
+		}
 	default:
 		cli.printUsage()
 		os.Exit(1)
@@ -104,5 +115,9 @@ func (cli *CLI) Run() {
 
 	if deletePod.Parsed() {
 		cli.deletePod()
+	}
+
+	if restartPod.Parsed() {
+		cli.restartPod()
 	}
 }

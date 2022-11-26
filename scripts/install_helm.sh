@@ -5,3 +5,7 @@ tar xvf helm-*-linux-amd64.tar.gz
 sudo mv linux-amd64/helm /usr/local/bin
 rm helm-*-linux-amd64.tar.gz
 rm -r linux-amd64
+
+# Add Chart repository
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update
