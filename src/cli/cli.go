@@ -8,7 +8,6 @@ import (
 	"os"
 
 	cluster "github.com/cclab.inu/testbed-mgmt/src/cluster"
-	"github.com/cclab.inu/testbed-mgmt/src/pod"
 	pods "github.com/cclab.inu/testbed-mgmt/src/pod"
 )
 
@@ -56,7 +55,7 @@ func (cli *CLI) deletePod() {
 }
 
 func (cli *CLI) restartPod() {
-	pod.RestartPods()
+	pods.RestartPods()
 }
 
 // Run parses command line arguments and processes commands
