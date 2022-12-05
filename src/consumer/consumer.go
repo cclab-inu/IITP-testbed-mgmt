@@ -12,6 +12,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 
 	cluster "github.com/cclab.inu/testbed-mgmt/src/cluster"
+	"github.com/cclab.inu/testbed-mgmt/src/types"
 	cilium "github.com/cilium/cilium/api/v1/flow"
 	pb "github.com/kubearmor/KubeArmor/protobuf"
 )
@@ -20,11 +21,13 @@ import (
 // == Global Variables  == //
 // ======================= //
 
+/*
 var HubbleURL string
 var HubblePort string
 
 var KubeArmorURL string
 var KubeArmorPort string
+
 
 func init() {
 	HubbleURL = "10.109.38.101"
@@ -33,13 +36,14 @@ func init() {
 	KubeArmorURL = "10.111.137.209"
 	KubeArmorPort = "32767"
 }
+*/
 
 // ========================= //
 // == Cilium Hubble Relay == //
 // ========================= //
 
-func ConnectHubbleRelay() *grpc.ClientConn {
-	addr := net.JoinHostPort(HubbleURL, HubblePort)
+func ConnectHubbleRelay(cfg types.ConfigCiliumHubble) *grpc.ClientConn {
+	addr := net.JoinHostPort(cfg.HubbleURL, cfg.HubblePort)
 
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
@@ -53,12 +57,12 @@ func ConnectHubbleRelay() *grpc.ClientConn {
 
 var HubbleRelayStarted = false
 
-func StartHubbleRelay(StopChan chan struct{}) {
+func StartHubbleRelay(StopChan chan struct{}, cfg types.ConfigCiliumHubble) {
 	if HubbleRelayStarted {
 		return
 	}
 
-	conn := ConnectHubbleRelay()
+	conn := ConnectHubbleRelay(cfg)
 	if conn == nil {
 		log.Error().Msg("ConnectHubbleRelay() failed")
 		return
@@ -131,8 +135,8 @@ func StartHubbleRelay(StopChan chan struct{}) {
 // == KubeArmor Relay == //
 // ===================== //
 
-func ConnectKubeArmorRelay() *grpc.ClientConn {
-	addr := net.JoinHostPort(KubeArmorURL, KubeArmorPort)
+func ConnectKubeArmorRelay(cfg types.ConfigKubeArmorRelay) *grpc.ClientConn {
+	addr := net.JoinHostPort(cfg.KubeArmorURL, KubeArmorPort)
 
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
