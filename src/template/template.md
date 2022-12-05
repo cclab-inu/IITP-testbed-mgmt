@@ -1,1 +1,1 @@
-# Image repositoy
+# Image Repository
