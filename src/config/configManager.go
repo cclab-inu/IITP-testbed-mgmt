@@ -37,8 +37,8 @@ func LoadConfigCiliumHubble() types.ConfigCiliumHubble {
 func LoadConfigKubeArmor() types.ConfigKubeArmorRelay {
 	cfgKubeArmor := types.ConfigKubeArmorRelay{}
 
-	cfgKubeArmor.KubeArmorRelayURL = viper.GetString("kubearmor.url")
-	cfgKubeArmor.KubeArmorRelayPort = viper.GetString("kubearmor.port")
+	cfgKubeArmor.KubeArmorURL = viper.GetString("kubearmor.url")
+	cfgKubeArmor.KubeArmorPort = viper.GetString("kubearmor.port")
 
 	return cfgKubeArmor
 }
