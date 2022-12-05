@@ -8,6 +8,8 @@ import (
 	"os"
 
 	cluster "github.com/cclab.inu/testbed-mgmt/src/cluster"
+	logs "github.com/cclab.inu/testbed-mgmt/src/consumer"
+	"github.com/cclab.inu/testbed-mgmt/src/image"
 	pods "github.com/cclab.inu/testbed-mgmt/src/pod"
 )
 
@@ -58,6 +60,18 @@ func (cli *CLI) restartPod() {
 	pods.RestartPods()
 }
 
+func (cli *CLI) pullImage() {
+	image.PullImage()
+}
+
+func (cli *CLI) deleteImage() {
+	image.DeleteImage()
+}
+
+func (cli *CLI) printLogs() {
+	logs.PrintLogs()
+}
+
 // Run parses command line arguments and processes commands
 func (cli *CLI) Run() {
 	cli.validateArgs()
@@ -68,6 +82,11 @@ func (cli *CLI) Run() {
 	deployPod := flag.NewFlagSet("deploy-pods", flag.ExitOnError)
 	deletePod := flag.NewFlagSet("deploy-pods", flag.ExitOnError)
 	restartPod := flag.NewFlagSet("restart-pods", flag.ExitOnError)
+
+	pullImage := flag.NewFlagSet("pull-image", flag.ExitOnError)
+	deleteImage := flag.NewFlagSet("delete-image", flag.ExitOnError)
+
+	printLogs := flag.NewFlagSet("print-logs", flag.ExitOnError)
 
 	switch os.Args[1] {
 	case "create-cluster":
@@ -95,6 +114,21 @@ func (cli *CLI) Run() {
 		if err != nil {
 			log.Panic(err)
 		}
+	case "pull-image":
+		err := pullImage.Parse(os.Args[2:])
+		if err != nil {
+			log.Panic(err)
+		}
+	case "delete-image":
+		err := deleteImage.Parse(os.Args[2:])
+		if err != nil {
+			log.Panic(err)
+		}
+	case "print-logs":
+		err := printLogs.Parse(os.Args[2:])
+		if err != nil {
+			log.Panic(err)
+		}
 	default:
 		cli.printUsage()
 		os.Exit(1)
@@ -118,5 +152,17 @@ func (cli *CLI) Run() {
 
 	if restartPod.Parsed() {
 		cli.restartPod()
+	}
+
+	if pullImage.Parsed() {
+		cli.pullImage()
+	}
+
+	if deleteImage.Parsed() {
+		cli.deleteImage()
+	}
+
+	if printLogs.Parsed() {
+		cli.printLogs()
 	}
 }

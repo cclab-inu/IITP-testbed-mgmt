@@ -5,9 +5,10 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 	"sync"
+
+	"github.com/cclab.inu/testbed-mgmt/src/image"
 )
 
 // deploy-pods
@@ -15,10 +16,7 @@ func DeployPods() {
 	var wg sync.WaitGroup
 	wg.Add(1)
 
-	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
-	if err != nil {
-		panic(err)
-	}
+	image.PullImage()
 
 	switch os.Args[2] {
 	// Web Daemon
@@ -34,16 +32,6 @@ func DeployPods() {
 			podName += os.Args[3]
 		}
 
-		// image pull
-		pullCmd := "docker pull " + image
-		cmd_img := exec.Command("sh", "-c", pullCmd)
-		cmd_img.Stderr = os.Stderr
-		pullOut, err := cmd_img.Output()
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Println(string(pullOut))
-
 		// create deployment ; 1 pod
 		runCmd := "kubectl create deployment " + podName + " --image=" + image + " --replicas=1 --port=80"
 		cmd_pod := exec.Command("sh", "-c", runCmd)
@@ -52,15 +40,6 @@ func DeployPods() {
 			log.Fatal(err)
 		}
 		fmt.Println(string(podOut))
-
-		// image save
-		saveCmd := "docker save -o " + dir + "/template/" + podName + ".tar " + image
-		cmd_save := exec.Command("sh", "-c", saveCmd)
-		_, err = cmd_save.Output()
-		if err != nil {
-			panic(err)
-		}
-		print("Image saving is complete. \n")
 
 	// CMS
 	case "joomla", "drupal", "wordpress":

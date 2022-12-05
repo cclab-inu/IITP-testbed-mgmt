@@ -2,8 +2,12 @@ package consumer
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"net"
+	"os"
+	"sync"
+	"time"
 
 	"github.com/cilium/cilium/api/v1/flow"
 	"github.com/cilium/cilium/api/v1/observer"
@@ -12,6 +16,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 
 	cluster "github.com/cclab.inu/testbed-mgmt/src/cluster"
+	"github.com/cclab.inu/testbed-mgmt/src/config"
 	"github.com/cclab.inu/testbed-mgmt/src/types"
 	cilium "github.com/cilium/cilium/api/v1/flow"
 	pb "github.com/kubearmor/KubeArmor/protobuf"
@@ -27,16 +32,18 @@ var HubblePort string
 
 var KubeArmorURL string
 var KubeArmorPort string
-
-
-func init() {
-	HubbleURL = "10.109.38.101"
-	HubblePort = "80"
-
-	KubeArmorURL = "10.111.137.209"
-	KubeArmorPort = "32767"
-}
 */
+
+var SystemStopChan chan struct{}
+var NetworkStopChan chan struct{}
+var AppStopChan chan struct{}
+
+// init Function
+func init() {
+	SystemStopChan = make(chan struct{})
+	NetworkStopChan = make(chan struct{})
+	AppStopChan = make(chan struct{})
+}
 
 // ========================= //
 // == Cilium Hubble Relay == //
@@ -136,7 +143,7 @@ func StartHubbleRelay(StopChan chan struct{}, cfg types.ConfigCiliumHubble) {
 // ===================== //
 
 func ConnectKubeArmorRelay(cfg types.ConfigKubeArmorRelay) *grpc.ClientConn {
-	addr := net.JoinHostPort(cfg.KubeArmorURL, KubeArmorPort)
+	addr := net.JoinHostPort(cfg.KubeArmorURL, cfg.KubeArmorPort)
 
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
@@ -150,13 +157,13 @@ func ConnectKubeArmorRelay(cfg types.ConfigKubeArmorRelay) *grpc.ClientConn {
 
 var KubeArmorRelayStarted = false
 
-func StartKubeArmorRelay(StopChan chan struct{}) {
+func StartKubeArmorRelay(StopChan chan struct{}, cfg types.ConfigKubeArmorRelay) {
 	if KubeArmorRelayStarted {
 		log.Info().Msg("kubearmor relay already started")
 		return
 	}
 	KubeArmorRelayStarted = true
-	conn := ConnectKubeArmorRelay()
+	conn := ConnectKubeArmorRelay(cfg)
 
 	client := pb.NewLogServiceClient(conn)
 	req := pb.RequestMessage{}
@@ -231,4 +238,64 @@ func StartPodLogs(StopChan chan struct{}, pod, namespace string) {
 			println(string(buf[:numBytes])) // get k8s logs
 		}
 	}
+}
+
+// ================
+// == print-logs ==
+// ================
+
+func PrintLogs() {
+	var wg sync.WaitGroup
+	wg.Add(1)
+
+	pods := cluster.GetPodsFromK8sClient()
+	namespaces := cluster.GetNamespacesFromK8sClient()
+
+	switch os.Args[2] {
+	case "all":
+		println("** Network Level Log **\n")
+		go StartHubbleRelay(NetworkStopChan, config.GetCfgCiliumHubble())
+		time.Sleep(time.Second * 3)
+		println("\n")
+
+		println("** System Level Log **\n")
+		go StartKubeArmorRelay(SystemStopChan, config.GetCfgKubeArmor())
+		time.Sleep(time.Second * 3)
+		println("\n")
+
+		println("** Application Level Log **\n")
+		for _, ns := range namespaces {
+			for _, pd := range pods {
+				go StartPodLogs(AppStopChan, pd.PodName, ns)
+			}
+		}
+		time.Sleep(time.Second * 3)
+		wg.Done()
+
+	case "network":
+		println("** Network Level Log **")
+		go StartHubbleRelay(NetworkStopChan, config.GetCfgCiliumHubble())
+		time.Sleep(time.Second * 3)
+		wg.Done()
+
+	case "system":
+		println("** System Level Log **")
+		go StartKubeArmorRelay(SystemStopChan, config.GetCfgKubeArmor())
+		time.Sleep(time.Second * 3)
+		wg.Done()
+
+	case "app":
+		println("** Application Level Log **")
+		for _, ns := range namespaces {
+			for _, pd := range pods {
+				go StartPodLogs(AppStopChan, pd.PodName, ns)
+			}
+		}
+		time.Sleep(time.Second * 3)
+		wg.Done()
+
+	default:
+		fmt.Println("Check your Command")
+	}
+
 }
