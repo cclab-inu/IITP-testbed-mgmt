@@ -1,0 +1,50 @@
+@startuml
+
+activate main
+main -> main : init():void
+activate main
+deactivate main
+deactivate main
+
+main -> cli : Run():void
+activate main
+deactivate main
+
+cli -> clusterHandler : CreateCluster():void
+activate cli
+participant sshHandler
+activate clusterHandler
+clusterHandler -> bar : startBar(Channel, WaitGroup):void
+activate bar
+bar->bar : NewOption(int64, int64):void
+deactivate cli
+activate bar
+deactivate bar
+clusterHandler -> sshHandler : ConnectSSH(string, string, string):SSHClient, error
+deactivate bar
+activate sshHandler
+clusterHandler -> sshHandler : sendCommand(string):[]byte,error
+bar -> clusterHandler : Play100():void
+deactivate bar
+deactivate sshHandler
+deactivate clusterHandler
+
+cli -> clusterHandler : DeleteCluster():void
+activate cli
+activate clusterHandler
+clusterHandler -> bar : startBar(Channel, WaitGroup):void
+activate bar
+bar->bar : NewOption(int64, int64):void
+deactivate cli
+activate bar
+deactivate bar
+clusterHandler -> sshHandler : ConnectSSH(string, string, string):SSHClient, error
+deactivate bar
+activate sshHandler
+clusterHandler -> sshHandler : sendCommand(string):[]byte,error
+bar -> clusterHandler : Play100():void
+deactivate bar
+deactivate sshHandler
+deactivate clusterHandler
+
+@enduml

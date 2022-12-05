@@ -1,5 +1,5 @@
 @startuml
-package src <<Folder>> {
+
     package bar <<Folder>> {
         class bar {
             ..struct..
@@ -14,7 +14,7 @@ package src <<Folder>> {
 
         }
     }
-
+    
     class main {
         ..function..
         + init()
@@ -88,57 +88,21 @@ package src <<Folder>> {
         }
     }
 
-    package pod <<Folder>>{
-        class podHandler {
-            ..function..
-            + DeployPods()
-            + DeletePods()
-            + RestartPods()
-        }
-    }
+main --> cli
+cli --> clusterHandler
 
-    package image <<Folder>>{
-        class image {
-            ..function..
-            + pullImage()
-            + deleteImage()
-        }
-    }
-
-    package consumer <<Folder>>{
-        class consumer {
-            ..function..
-            + init()
-            + ConnectHubbleRelay()
-            + StartHubbleRelay()
-            + ConnectKubeArmorRelay()
-            + StartKubeArmorRelay()
-            + StartPodLogs()
-        }
-    }
-    package templete <<Folder>> {
-    }
-}
-
-main <-- cli
-cli <-- pod
-cli <-- clusterHandler
-cli <-- image
-cli <-- consumer
 
 clusterHandler <-- sshHandler
-clusterHandler -- k8sData
-clusterHandler <-- conf
 clusterHandler <-- bar
 
-podHandler <-- image
-podHandler <--> templete
+clusterHandler -- types
+clusterHandler -- conf
 
-templete --> image
-image --> templete
 
-consumer -- k8sData
-consumer -- feedData
-consumer -- ConfigData
+
+
+
+
+
 
 @enduml

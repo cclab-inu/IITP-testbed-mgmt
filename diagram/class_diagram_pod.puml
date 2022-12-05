@@ -1,0 +1,58 @@
+@startuml
+    
+    class main {
+        ..function..
+        + init()
+        + main()
+    }
+
+    package cli <<Folder>> {
+        class cli {
+            ..struct..
+            - CLI 
+            ..function..
+            + printUsage() 
+            + validateArgs() 
+            + createCluster() 
+            + deleteCluster() 
+            + deployPod() 
+            + deletePod() 
+            + restartPod()
+            + pullImage()
+            + deleteImage()
+            + printLogs()
+            + Run() 
+        }
+    }
+
+
+    package pod <<Folder>>{
+        class podHandler {
+            ..function..
+            + DeployPods()
+            + DeletePods()
+            + RestartPods()
+        }
+    }
+
+    package image <<Folder>>{
+        class imageHandler {
+            ..function..
+            + PullImage()
+            + DeleteImage()
+            + MakeImage()
+        }
+    }
+    package template <<Folder>> {
+    }
+
+
+main --> cli
+cli --> podHandler
+cli --> imageHandler
+
+template <--> imageHandler
+
+podHandler <-- imageHandler
+
+@enduml

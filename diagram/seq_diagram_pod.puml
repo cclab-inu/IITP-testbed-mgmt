@@ -1,0 +1,32 @@
+@startuml
+
+activate main
+main -> main : init():void
+activate main
+deactivate main
+deactivate main
+
+main -> cli : Run():void
+activate main
+deactivate main
+
+cli -> podHandler : DeployPod():void
+activate cli
+podHandler -> ImageHandler : PullImage(string, string):void
+activate podHandler
+
+ImageHandler -> ImageHandler : MakeImage(string, string):void
+activate ImageHandler
+deactivate cli
+deactivate ImageHandler
+deactivate podHandler
+
+cli -> podHandler : DeletePod():void
+activate cli
+deactivate cli
+
+cli -> podHandler : RestartPod():void
+activate cli
+deactivate cli
+
+@enduml

@@ -1,0 +1,88 @@
+@startuml
+    
+    class main {
+        ..function..
+        + init()
+        + main()
+    }
+
+    package cli <<Folder>> {
+        class cli {
+            ..struct..
+            - CLI 
+            ..function..
+            + printUsage() 
+            + validateArgs() 
+            + createCluster() 
+            + deleteCluster() 
+            + deployPod() 
+            + deletePod() 
+            + restartPod()
+            + pullImage()
+            + deleteImage()
+            + printLogs()
+            + Run() 
+        }
+    }
+
+
+    package types <<Folder>>{
+        class ConfigData{
+            ..struct..
+            - ConfigCiliumHubble
+        }
+        class feedData{
+            ..struct..
+            - NetworkLogEvent
+            - SystemLogEvent
+            - SystemAlertEvent
+            - WorkloadProcessFileSet
+            - PolicyNameMap
+            - ResourceSetMap
+        }
+        class k8sData {
+            ..struct..
+            - Pod
+        }
+    }
+
+    package consumer <<Folder>>{
+        class consumer {
+            ..function..
+            + init()
+            + PrintLogs()
+            + ConnectHubbleRelay()
+            + StartHubbleRelay()
+            + ConnectKubeArmorRelay()
+            + StartKubeArmorRelay()
+            + StartPodLogs()
+        }
+    }
+
+    package cluster <<Folder>> {
+        class sshHandler {
+            ..struct..
+            - SSHClient
+            ..function..
+            + ConnectSSH()
+            + SentCommands()
+        }
+        class clusterHandler {
+            ..function..
+            + isInCluster()
+            + ConnectK8sClient()
+            + ConnectLocalAPIClient()
+            + ConnectInClusterAPIClient()
+            + GetNamespacesFromK8sClient()
+            + GetPodsFromK8sClient()
+            + CreateCluster()
+            + DeleteCluster()
+        }
+    }
+
+consumer --types
+
+main --> cli
+cli --> consumer
+consumer <-- clusterHandler
+@enduml

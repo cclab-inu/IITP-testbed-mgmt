@@ -1,0 +1,150 @@
+@startuml
+
+    package bar <<Folder>> {
+        class bar {
+            ..struct..
+            - bar
+            ..function..
+            + StartBar()
+            + getPercent()
+            + NewOption() 
+            + Play() 
+            + Play100() 
+            + Finish() 
+
+        }
+    }
+    
+    class main {
+        ..function..
+        + init()
+        + main()
+    }
+
+    package cli <<Folder>> {
+        class cli {
+            ..struct..
+            - CLI 
+            ..function..
+            + printUsage() 
+            + validateArgs() 
+            + createCluster() 
+            + deleteCluster() 
+            + deployPod() 
+            + deletePod() 
+            + restartPod()
+            + pullImage()
+            + deleteImage()
+            + printLogs()
+            + Run() 
+        }
+    }
+
+
+    package cluster <<Folder>> {
+        class sshHandler {
+            ..struct..
+            - SSHClient
+            ..function..
+            + ConnectSSH()
+            + SentCommands()
+        }
+        class clusterHandler {
+            ..function..
+            + isInCluster()
+            + ConnectK8sClient()
+            + ConnectLocalAPIClient()
+            + ConnectInClusterAPIClient()
+            + GetNamespacesFromK8sClient()
+            + GetPodsFromK8sClient()
+            + CreateCluster()
+            + DeleteCluster()
+        }
+    }
+
+    package conf <<Folder>>{
+        class conf {
+            + local.yaml
+        }
+    }
+
+    package types <<Folder>>{
+        class ConfigData{
+            ..struct..
+            - ConfigCiliumHubble
+        }
+        class feedData{
+            ..struct..
+            - NetworkLogEvent
+            - SystemLogEvent
+            - SystemAlertEvent
+            - WorkloadProcessFileSet
+            - PolicyNameMap
+            - ResourceSetMap
+        }
+        class k8sData {
+            ..struct..
+            - Pod
+        }
+    }
+
+    package pod <<Folder>>{
+        class podHandler {
+            ..function..
+            + DeployPods()
+            + DeletePods()
+            + RestartPods()
+        }
+    }
+
+    package image <<Folder>>{
+        class imageHandler {
+            ..function..
+            + PullImage()
+            + DeleteImage()
+            + MakeImage()
+        }
+    }
+
+    package consumer <<Folder>>{
+        class consumer {
+            ..function..
+            + init()
+            + PringLogs()
+            + ConnectHubbleRelay()
+            + StartHubbleRelay()
+            + ConnectKubeArmorRelay()
+            + StartKubeArmorRelay()
+            + StartPodLogs()
+        }
+    }
+    package template <<Folder>> {
+    }
+
+
+consumer --types
+
+main --> cli
+cli --> podHandler
+cli --> clusterHandler
+cli --> imageHandler
+cli --> consumer
+
+template <--> imageHandler
+
+clusterHandler <-- sshHandler
+clusterHandler <-- bar
+clusterHandler --> consumer
+podHandler <-- imageHandler
+
+clusterHandler -- types
+clusterHandler -- conf
+
+
+
+
+
+
+
+
+@enduml

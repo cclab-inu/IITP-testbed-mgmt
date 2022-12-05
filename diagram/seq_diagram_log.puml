@@ -1,0 +1,41 @@
+@startuml
+
+activate main
+main -> main : init():void
+activate main
+deactivate main
+deactivate main
+
+main -> cli : Run():void
+activate main
+deactivate main
+
+cli -> consumer : PrintLogs():void
+activate cli
+
+consumer -> cli : StartHubbleRelay(Channel):void
+activate consumer
+consumer -> consumer : ConnectHubbleRelay():ClientConn
+activate consumer
+deactivate consumer
+deactivate consumer
+
+consumer -> cli : StartKubeArmorRelay(Channel):void
+activate consumer
+consumer -> consumer : ConnectKubeArmorRelay():ClientConn
+activate consumer
+deactivate consumer
+deactivate consumer
+
+consumer -> cli : StartPodLog(Channel, string, string):void
+activate consumer
+consumer -> clusterHandler : ConnectK8sClient():Clientset
+deactivate cli
+activate clusterHandler
+clusterHandler -> clusterHandler : isCluster():boolean
+activate clusterHandler
+clusterHandler -> clusterHandler : ConnectK8sClient():Clientset
+clusterHandler -> clusterHandler : ConnectInClusterAPI():Clientset
+deactivate consumer
+
+@enduml
