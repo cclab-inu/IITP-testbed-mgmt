@@ -17,6 +17,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 
 	bar "github.com/cclab.inu/testbed-mgmt/src/bar"
+	config "github.com/cclab.inu/testbed-mgmt/src/config"
 	"github.com/cclab.inu/testbed-mgmt/src/types"
 )
 
@@ -81,6 +82,9 @@ func ConnectLocalAPIClient() *kubernetes.Clientset {
 }
 
 func ConnectInClusterAPIClient() *kubernetes.Clientset {
+
+	cfg := config.LoadConfigCluster()
+
 	host := ""
 	port := ""
 	token := ""
@@ -88,7 +92,7 @@ func ConnectInClusterAPIClient() *kubernetes.Clientset {
 	if val, ok := os.LookupEnv("KUBERNETES_SERVICE_HOST"); ok {
 		host = val
 	} else {
-		host = "127.0.0.1"
+		host = cfg.Master
 	}
 
 	if val, ok := os.LookupEnv("KUBERNETES_PORT_443_TCP_PORT"); ok {
@@ -120,6 +124,10 @@ func ConnectInClusterAPIClient() *kubernetes.Clientset {
 	} else {
 		return client
 	}
+}
+
+func LoadConfigCluster() {
+	panic("unimplemented")
 }
 
 // =============== //
@@ -190,6 +198,8 @@ func CreateCluster() {
 	var wg sync.WaitGroup
 	wg.Add(1)
 
+	cfg := config.LoadConfigCluster()
+
 	ch := make(chan interface{})
 	go bar.StartBar(ch, &wg)
 
@@ -229,7 +239,7 @@ func CreateCluster() {
 	join = strings.Replace(join, "\n", " ", -1)
 	join = strings.TrimSpace(join)
 
-	for _, worker := range []string{"172.16.0.111", "172.16.0.112"} {
+	for _, worker := range []string{cfg.Worker1, cfg.Worker2} {
 		sshCient, err := ConnectSSH(worker+":22", "cclab", "cclab")
 		if err != nil {
 			panic(err)
@@ -246,6 +256,8 @@ func DeleteCluster() {
 	var wg sync.WaitGroup
 	wg.Add(1)
 
+	cfg := config.LoadConfigCluster()
+
 	ch := make(chan interface{})
 	go bar.StartBar(ch, &wg)
 
@@ -261,7 +273,7 @@ func DeleteCluster() {
 		panic(err)
 	}
 
-	for _, worker := range []string{"172.16.0.111", "172.16.0.112"} {
+	for _, worker := range []string{cfg.Worker1, cfg.Worker2} {
 		sshCient, err := ConnectSSH(worker+":22", "cclab", "cclab")
 		if err != nil {
 			panic(err)

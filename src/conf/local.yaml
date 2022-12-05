@@ -8,9 +8,9 @@ cluster:
   worker2: 172.16.0.112
 
 cilium-hubble:
-  url: localhost
-  port: 4245
+  url: 10.109.38.101
+  port: 80 # 4245
 
 kubearmor:
-  url: localhost
+  url: 10.111.137.209
   port: 32767

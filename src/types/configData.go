@@ -7,8 +7,8 @@ type ConfigCluster struct {
 }
 
 type ConfigKubeArmorRelay struct {
-	KubeArmorRelayURL  string `json:"kubearmor_url,omitempty" bson:"kubearmor_url,omitempty"`
-	KubeArmorRelayPort string `json:"kubearmor_port,omitempty" bson:"kubearmor_port,omitempty"`
+	KubeArmorURL  string `json:"kubearmor_url,omitempty" bson:"kubearmor_url,omitempty"`
+	KubeArmorPort string `json:"kubearmor_port,omitempty" bson:"kubearmor_port,omitempty"`
 }
 
 type ConfigCiliumHubble struct {
