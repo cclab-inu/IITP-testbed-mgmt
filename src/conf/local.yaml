@@ -14,9 +14,9 @@ cluster:
     pw: cclab
 
 cilium-hubble:
-  url: 10.102.171.44
+  url: 10.110.139.142
   port: 80 # 4245
 
 kubearmor:
-  url: 10.106.177.222
+  url: 10.107.65.121
   port: 32767
