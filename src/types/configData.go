@@ -1,9 +1,15 @@
 package types
 
+type ConfigWorker struct {
+	IP    string `json:"ip,omitempty" bson:"ip,omitempty"`
+	SSHID string `json:"sshid,omitempty" bson:"sshid,omitempty"`
+	SSHPW string `json:"sshpw,omitempty" bson:"sshpw,omitempty"`
+}
+
 type ConfigCluster struct {
-	Master  string `json:"master,omitempty" bson:"master,omitempty"`
-	Worker1 string `json:"worker1,omitempty" bson:"worker1,omitempty"`
-	Worker2 string `json:"worker2,omitempty" bson:"worker2,omitempty"`
+	Master  string       `json:"master,omitempty" bson:"master,omitempty"`
+	Worker1 ConfigWorker `json:"worker1,omitempty" bson:"worker1,omitempty"`
+	Worker2 ConfigWorker `json:"worker2,omitempty" bson:"worker2,omitempty"`
 }
 
 type ConfigKubeArmorRelay struct {

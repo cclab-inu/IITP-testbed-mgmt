@@ -1,11 +1,17 @@
 project:
   home: /home/cclab
   user : cclab
-
+  
 cluster:
   master: 127.0.0.1
-  worker1: 172.16.0.111
-  worker2: 172.16.0.112
+  worker1: 
+    ip: 172.16.0.111
+    id: cclab
+    pw: cclab
+  worker2: 
+    ip: 172.16.0.112
+    id: cclab
+    pw: cclab
 
 cilium-hubble:
   url: 10.109.38.101

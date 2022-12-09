@@ -11,16 +11,36 @@ import (
 
 var CurrentCfg types.Configuration
 
-// =========================== //
-// == Configuration Loading == //
-// =========================== //
+func init() {
+	viper.AddConfigPath("./conf")
+	viper.SetConfigName("local")
+	viper.SetConfigType("yaml")
+	err := viper.ReadInConfig()
+	if err != nil {
+		panic(err)
+	}
+
+	LoadConfigFromFile()
+}
+
+// ======================== //
+// == Load Configuration == //
+// ======================== //
 
 func LoadConfigCluster() types.ConfigCluster {
 	cfgCluster := types.ConfigCluster{}
 
 	cfgCluster.Master = viper.GetString("cluster.master")
-	cfgCluster.Worker1 = viper.GetString("cluster.worker1")
-	cfgCluster.Worker2 = viper.GetString("cluster.worker2")
+	cfgCluster.Worker1 = types.ConfigWorker{
+		IP:    viper.GetString("cluster.worker1.ip"),
+		SSHID: viper.GetString("cluster.worker1.id"),
+		SSHPW: viper.GetString("cluster.worker1.pw"),
+	}
+	cfgCluster.Worker2 = types.ConfigWorker{
+		IP:    viper.GetString("cluster.worker2.ip"),
+		SSHID: viper.GetString("cluster.worker2.id"),
+		SSHPW: viper.GetString("cluster.worker2.pw"),
+	}
 
 	return cfgCluster
 }

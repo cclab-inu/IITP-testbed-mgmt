@@ -82,8 +82,7 @@ func ConnectLocalAPIClient() *kubernetes.Clientset {
 }
 
 func ConnectInClusterAPIClient() *kubernetes.Clientset {
-
-	cfg := config.LoadConfigCluster()
+	cfg := config.GetCfgCluster()
 
 	host := ""
 	port := ""
@@ -195,10 +194,9 @@ func GetPodsFromK8sClient() []types.Pod {
 // ============= //
 
 func CreateCluster() {
+	log.Info().Msg("Creating Cluster...")
 	var wg sync.WaitGroup
 	wg.Add(1)
-
-	cfg := config.LoadConfigCluster()
 
 	ch := make(chan interface{})
 	go bar.StartBar(ch, &wg)
@@ -215,7 +213,7 @@ func CreateCluster() {
 		panic(err)
 	}
 
-	file = os.Getenv("HOME") + "/k8s_init.log"
+	file = config.GetCurrentCfg().Home + "/k8s_init.log"
 	b, _ := os.Open(file)
 	content, err := ioutil.ReadAll(b)
 	if err != nil {
@@ -239,24 +237,30 @@ func CreateCluster() {
 	join = strings.Replace(join, "\n", " ", -1)
 	join = strings.TrimSpace(join)
 
-	for _, worker := range []string{cfg.Worker1, cfg.Worker2} {
-		sshCient, err := ConnectSSH(worker+":22", "cclab", "cclab")
+	cfgCluster := config.GetCurrentCfg().ConfigCluster
+	workers := []types.ConfigWorker{cfgCluster.Worker1, cfgCluster.Worker2}
+	for _, worker := range workers {
+		sshCient, err := ConnectSSH(worker.IP+":22", worker.SSHID, worker.SSHPW)
 		if err != nil {
-			panic(err)
+			log.Err(err)
+			os.Exit(1)
 		}
 
 		_, err = sshCient.SendCommands("sudo " + join)
 		if err != nil {
-			panic(err)
+			log.Err(err)
+			os.Exit(1)
 		}
 	}
+
+	close(ch)
+	wg.Wait()
 }
 
 func DeleteCluster() {
+	log.Info().Msg("Deleting Cluster...")
 	var wg sync.WaitGroup
 	wg.Add(1)
-
-	cfg := config.LoadConfigCluster()
 
 	ch := make(chan interface{})
 	go bar.StartBar(ch, &wg)
@@ -273,8 +277,10 @@ func DeleteCluster() {
 		panic(err)
 	}
 
-	for _, worker := range []string{cfg.Worker1, cfg.Worker2} {
-		sshCient, err := ConnectSSH(worker+":22", "cclab", "cclab")
+	cfgCluster := config.GetCurrentCfg().ConfigCluster
+	workers := []types.ConfigWorker{cfgCluster.Worker1, cfgCluster.Worker2}
+	for _, worker := range workers {
+		sshCient, err := ConnectSSH(worker.IP+":22", worker.SSHID, worker.SSHPW)
 		if err != nil {
 			panic(err)
 		}

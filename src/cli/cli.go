@@ -48,6 +48,11 @@ func (cli *CLI) deleteCluster() {
 	cluster.DeleteCluster()
 }
 
+func (cli *CLI) restartCluster() {
+	cluster.DeleteCluster()
+	cluster.CreateCluster()
+}
+
 func (cli *CLI) deployPod() {
 	pods.DeployPods()
 }
@@ -78,6 +83,7 @@ func (cli *CLI) Run() {
 
 	createCluster := flag.NewFlagSet("create-cluster", flag.ExitOnError)
 	deleteCluster := flag.NewFlagSet("delete-cluster", flag.ExitOnError)
+	restartCluster := flag.NewFlagSet("restart-cluster", flag.ExitOnError)
 
 	deployPod := flag.NewFlagSet("deploy-pods", flag.ExitOnError)
 	deletePod := flag.NewFlagSet("deploy-pods", flag.ExitOnError)
@@ -96,6 +102,11 @@ func (cli *CLI) Run() {
 		}
 	case "delete-cluster":
 		err := deleteCluster.Parse(os.Args[2:])
+		if err != nil {
+			log.Panic(err)
+		}
+	case "restart-cluster":
+		err := restartCluster.Parse(os.Args[2:])
 		if err != nil {
 			log.Panic(err)
 		}
@@ -140,6 +151,10 @@ func (cli *CLI) Run() {
 
 	if createCluster.Parsed() {
 		cli.createCluster()
+	}
+
+	if restartCluster.Parsed() {
+		cli.restartCluster()
 	}
 
 	if deployPod.Parsed() {
