@@ -1,12 +1,12 @@
 package image
 
 import (
-	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"sync"
+
+	"github.com/rs/zerolog/log"
 )
 
 // pull-image
@@ -16,7 +16,7 @@ func PullImage() {
 
 	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
 	if err != nil {
-		panic(err)
+		log.Err(err)
 	}
 
 	switch os.Args[2] {
@@ -39,9 +39,9 @@ func PullImage() {
 		cmd_img.Stderr = os.Stderr
 		pullOut, err := cmd_img.Output()
 		if err != nil {
-			log.Fatal(err)
+			log.Err(err)
 		}
-		fmt.Println(string(pullOut))
+		log.Info().Msg(string(pullOut))
 
 		// image save
 		saveCmd := "docker save -o " + dir + "/template/" + podName + ".tar " + image
@@ -50,7 +50,7 @@ func PullImage() {
 		if err != nil {
 			panic(err)
 		}
-		print("Successfully saved Image: " + podName + ".tar \n")
+		log.Info().Msg("Successfully saved Image: " + podName + ".tar \n")
 
 	// CMS
 	case "joomla", "drupal", "wordpress":
@@ -60,10 +60,10 @@ func PullImage() {
 		if err != nil {
 			panic(err)
 		}
-		print("Successfully saved Charts: " + os.Args[2] + "\n")
+		log.Info().Msg("Successfully saved Charts: " + os.Args[2] + "\n")
 
 	default:
-		print("Check you Command\n")
+		log.Info().Msg("Check you Command\n")
 	}
 }
 
@@ -82,7 +82,7 @@ func DeleteImage() {
 		cmd_delall := exec.Command("sh", "-c", allCmd)
 		_, err := cmd_delall.Output()
 		if err != nil {
-			panic(err)
+			log.Err(err)
 		}
 
 	// Web Daemon
@@ -100,17 +100,17 @@ func DeleteImage() {
 					cmd_delfile := exec.Command("sh", "-c", fileCmd)
 					_, err := cmd_delfile.Output()
 					if err != nil {
-						panic(err)
+						log.Err(err)
 					}
 
 					docCmd := "docker rmi `docker images | awk '$1 ~ /" + os.Args[2] + "/ {print $3}'`"
 					cmd_deldoc := exec.Command("sh", "-c", docCmd)
 					_, err = cmd_deldoc.Output()
 					if err != nil {
-						panic(err)
+						log.Err(err)
 					}
 				}
-				print("Successfully deleted all of Images: " + os.Args[2] + " \n")
+				log.Info().Msg("Successfully deleted all of Images: " + os.Args[2] + " \n")
 				os.Exit(1)
 			}
 			image += ":" + os.Args[3]
@@ -121,16 +121,16 @@ func DeleteImage() {
 		cmd_delImg := exec.Command("sh", "-c", rmiCmd)
 		_, err := cmd_delImg.Output()
 		if err != nil {
-			panic(err)
+			log.Err(err)
 		}
 		// template file delete
-		selCmd := "find " + dir + "/template/" + " -type f -name " + fileName + " -exec rm {} \\;"
+		selCmd := "find " + dir + "/template/" + " -type f -name " + fileName + ".tar -exec rm {} \\;"
 		cmd_delSel := exec.Command("sh", "-c", selCmd)
 		_, err = cmd_delSel.Output()
 		if err != nil {
-			panic(err)
+			log.Err(err)
 		}
-		print("Successfully deleted Image: " + fileName + " \n")
+		log.Info().Msg("Successfully deleted Image: " + fileName + " \n")
 		wg.Done()
 
 	// CMS
@@ -141,10 +141,10 @@ func DeleteImage() {
 		if err != nil {
 			panic(err)
 		}
-		print("Successfully deleted Image: " + os.Args[2] + " \n")
+		log.Info().Msg("Successfully deleted Image: " + os.Args[2] + " \n")
 		wg.Done()
 	default:
-		fmt.Println("Check your Command")
+		log.Info().Msg("Check your Command")
 	}
 
 }

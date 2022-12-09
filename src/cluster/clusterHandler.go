@@ -179,10 +179,16 @@ func GetPodsFromK8sClient() []types.Pod {
 	}
 
 	for _, pod := range pods.Items {
+		containers := []string{}
+		for _, c := range pod.Spec.Containers {
+			containers = append(containers, c.Name)
+		}
+
 		results = append(results, types.Pod{
-			Namespace: pod.Namespace,
-			PodName:   pod.Name,
-			PodIP:     pod.Status.PodIP,
+			Namespace:  pod.Namespace,
+			PodName:    pod.Name,
+			PodIP:      pod.Status.PodIP,
+			Containers: containers,
 		})
 	}
 

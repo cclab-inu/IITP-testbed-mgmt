@@ -1,7 +1,9 @@
 package consumer
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net"
@@ -43,6 +45,15 @@ func init() {
 	SystemStopChan = make(chan struct{})
 	NetworkStopChan = make(chan struct{})
 	AppStopChan = make(chan struct{})
+}
+
+func jsonPrettyPrint(in string) string {
+	var out bytes.Buffer
+	err := json.Indent(&out, []byte(in), "", "\t")
+	if err != nil {
+		return in
+	}
+	return out.String()
 }
 
 // ========================= //
@@ -132,7 +143,7 @@ func StartHubbleRelay(StopChan chan struct{}, cfg types.ConfigCiliumHubble) {
 				flow := r.Flow
 				b, _ := flow.MarshalJSON()
 
-				println(string(b)) // get cilium logs
+				fmt.Println(jsonPrettyPrint(string(b))) // get cilium logs
 			}
 		}
 	}
@@ -193,7 +204,7 @@ func StartKubeArmorRelay(StopChan chan struct{}, cfg types.ConfigKubeArmorRelay)
 				return
 			}
 
-			println(res.GetData()) // get kubearmor log
+			log.Info().Msg(res.GetData())
 		}
 	}
 }
@@ -202,15 +213,16 @@ func StartKubeArmorRelay(StopChan chan struct{}, cfg types.ConfigKubeArmorRelay)
 // == Kubernetes System == //
 // ======================= //
 
-func StartPodLogs(StopChan chan struct{}, pod, namespace string) {
+func StartPodLogs(StopChan chan struct{}, pod types.Pod) {
 	var since int64 = 1
 	podLogOptions := v1.PodLogOptions{
 		Follow:       true,
 		SinceSeconds: &since,
+		Container:    pod.Containers[0],
 	}
 
 	cli := cluster.ConnectK8sClient()
-	podLogRequest := cli.CoreV1().Pods(namespace).GetLogs(pod, &podLogOptions)
+	podLogRequest := cli.CoreV1().Pods(pod.Namespace).GetLogs(pod.PodName, &podLogOptions)
 
 	stream, err := podLogRequest.Stream(context.Background())
 	if err != nil {
@@ -235,67 +247,64 @@ func StartPodLogs(StopChan chan struct{}, pod, namespace string) {
 				return
 			}
 
-			println(string(buf[:numBytes])) // get k8s logs
+			log.Info().Msg(string(buf[:numBytes])) // get k8s logs
 		}
 	}
 }
 
-// ================
-// == print-logs ==
-// ================
+// ================ //
+// == print-logs == //
+// ================ //
 
 func PrintLogs() {
 	var wg sync.WaitGroup
 	wg.Add(1)
 
 	pods := cluster.GetPodsFromK8sClient()
-	namespaces := cluster.GetNamespacesFromK8sClient()
 
 	switch os.Args[2] {
 	case "all":
-		println("** Network Level Log **\n")
+		log.Info().Msg("** Network Level Log **\n")
 		go StartHubbleRelay(NetworkStopChan, config.GetCfgCiliumHubble())
-		time.Sleep(time.Second * 3)
-		println("\n")
+		time.Sleep(time.Second * 5)
+		log.Info().Msg("\n")
 
-		println("** System Level Log **\n")
+		log.Info().Msg("** System Level Log **\n")
 		go StartKubeArmorRelay(SystemStopChan, config.GetCfgKubeArmor())
-		time.Sleep(time.Second * 3)
-		println("\n")
+		time.Sleep(time.Second * 5)
+		log.Info().Msg("\n")
 
-		println("** Application Level Log **\n")
-		for _, ns := range namespaces {
-			for _, pd := range pods {
-				go StartPodLogs(AppStopChan, pd.PodName, ns)
-			}
+		log.Info().Msg("** Application Level Log **\n")
+		for _, pd := range pods {
+			go StartPodLogs(AppStopChan, pd)
 		}
-		time.Sleep(time.Second * 3)
+
+		time.Sleep(time.Second * 5)
 		wg.Done()
 
 	case "network":
-		println("** Network Level Log **")
+		log.Info().Msg("** Network Level Log **")
 		go StartHubbleRelay(NetworkStopChan, config.GetCfgCiliumHubble())
-		time.Sleep(time.Second * 3)
+		time.Sleep(time.Second * 5)
 		wg.Done()
 
 	case "system":
-		println("** System Level Log **")
+		log.Info().Msg("** System Level Log **")
 		go StartKubeArmorRelay(SystemStopChan, config.GetCfgKubeArmor())
-		time.Sleep(time.Second * 3)
+		time.Sleep(time.Second * 5)
 		wg.Done()
 
 	case "app":
-		println("** Application Level Log **")
-		for _, ns := range namespaces {
-			for _, pd := range pods {
-				go StartPodLogs(AppStopChan, pd.PodName, ns)
-			}
+		log.Info().Msg("** Application Level Log **")
+		for _, pd := range pods {
+			go StartPodLogs(AppStopChan, pd)
 		}
-		time.Sleep(time.Second * 3)
+
+		time.Sleep(time.Second * 5)
 		wg.Done()
 
 	default:
-		fmt.Println("Check your Command")
+		log.Info().Msg("Check your Command")
 	}
 
 }
