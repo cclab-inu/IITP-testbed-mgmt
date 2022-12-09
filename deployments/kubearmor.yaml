@@ -138,11 +138,8 @@ spec:
           readOnly: true
         - mountPath: /etc/apparmor.d
           name: etc-apparmor-d-path
-        - mountPath: /var/run/containerd/containerd.sock
-          name: containerd-sock-path
-          readOnly: true
-        - mountPath: /run/containerd
-          name: containerd-storage-path
+        - mountPath: /var/run/docker.sock
+          name: docker-sock-path
           readOnly: true
         - mountPath: /var/lib/docker
           name: docker-storage-path
@@ -226,13 +223,9 @@ spec:
           type: DirectoryOrCreate
         name: etc-apparmor-d-path
       - hostPath:
-          path: /var/run/containerd/containerd.sock
+          path: /var/run/docker.sock
           type: Socket
-        name: containerd-sock-path
-      - hostPath:
-          path: /run/containerd
-          type: DirectoryOrCreate
-        name: containerd-storage-path
+        name: docker-sock-path
       - hostPath:
           path: /var/lib/docker
           type: DirectoryOrCreate

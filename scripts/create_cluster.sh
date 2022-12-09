@@ -69,3 +69,6 @@ elif [ "$CNI" == "cilium" ]; then
     rm cilium-linux-amd64.tar.gz{,.sha256sum}
     /usr/local/bin/cilium install
 fi
+
+# enable hubble 
+cilium hubble enable
